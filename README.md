@@ -1,1 +1,1 @@
-Keeping notes of a few books / articles that I read
+Keeping notes of a few books / articles that I've read
