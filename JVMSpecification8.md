@@ -49,14 +49,14 @@ Organization of the Specification
 It does not describe any particular implementation of the Java Virtual Machine. Implementation is left to the implementors, so
 things like memory layout of run-time data areas, garbage collector algorithm (GC) etc. are not specified.
 
-Class file format
------------------
+2.1 Class file format
+---------------------
 
 * Compiled code to be executed by the JVM is represented using a hardware and operating system (OS) independent binary format.
 * The name of the file format is the `class` format.
 
-Data types
-----------
+2.2 Data types
+--------------
 
 * Like Java, the JVM has 2 kind of types: primitives types & reference types.
 * 2 kind of values can be stored in variables: primitive values & reference values.
@@ -70,8 +70,8 @@ Data types
 * More than one reference to an object may exist. Objects are always operated on, passed, and tested via values of type reference.
 
 
-Primitive Types and Values
---------------------------
+2.3 Primitive Types and Values
+------------------------------
 
 * Numeric types, boolean type, returnAddress type.
 * Numeric types are integral types, floating point types.
@@ -85,15 +85,14 @@ Primitive Types and Values
 ** float
 ** double
 
-returnAddress
--------------
+**returnAddress**
+
 
 * The values of the returnAddress type are pointers to the opcodes of the JVM instructions.
 * Of the primitive types, only the returnAddress type is not directly associated with a Java programming language type.
 
 
-IEEE 754
---------
+**IEEE 754**
 
 * Format is (1 + e + m) bits where value = sign * coefficient *  2^(exponent - delta)
 * coefficient is encoded using m bits, exponent is encoded on e bits & delta is equal to 2^(e-1) - 1
@@ -108,8 +107,8 @@ IEEE 754
 
 (more to be added here)
 
-boolean type
-------------
+**2.3.4 boolean type**
+
 * JVM provides a very limited set of operations on boolean values.
 * Instead, expressions in Java that operate on boolean use the JVM int type.
 * JVM supports boolean arrays, `newarray` instruction
@@ -181,7 +180,8 @@ boolean type
 * If supplied, native method stacks are typically allocated per thread when each thread is created.
 * Possible exceptions: StackOverflowError, OutOfMemoryError
 
-**2.6 Frames**
+2.6 Frames
+----------
 
 * A frame is used to store data & partial results | perform dynamic linking | return values for methods | dispatch exceptions.
 * A frame is created every time a method is invoked.
