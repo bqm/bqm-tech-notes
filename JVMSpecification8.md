@@ -3,11 +3,6 @@ Java Virtual Machine Specification (V8)
 
 https://docs.oracle.com/javase/specs/jvms/se8/jvms8.pdf
 
-Table of contents
-
-???
-
-
 0. Preface
 ==========
 
