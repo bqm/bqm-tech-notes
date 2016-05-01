@@ -145,12 +145,12 @@ boolean type
 
 **2.5.2 JVM stacks**
 
-* Each JVM thread has its private stack which stores store frames.
+* Each JVM thread has its private stack which stores frames.
 * A stack holds local variables & partial results & plays a role in method invocation & return.
 * JVM stack is never manipulated except via push & pop so frames must be heap allocated
 * A JVM stack size can be fixed at creation of the thread or be dynamically expanded.
 * If the computation requires a larger stack than permitted then the JVM will throw an StackOverflowException
-* If the expansion failed, the JVM will throw a OutOfMemory
+* If the expansion failed, the JVM will throw a OutOfMemoryError exception
 
 **2.5.3 Heap**
 
@@ -158,7 +158,47 @@ boolean type
 * Heap is created on the VM start up
 * Heap storage for objects is reclaimed by an automatic storage management system (garbage collector)
 * Objects are never explicitly deallocated
+* Heap may be of fixed size or may be expanded / contracted as required
+* If the computation requires more heap than can be made available by the automatic storage management system, the JVM will throw an OutOfMemoryError exception
 
 
+**2.5.4 Method area**
 
+* JVM has a method area that is common across all threads
+* It stores per class structures such as the run time constant pool, field & method data, code for methods & constructors, including the special methods ($2.9)
+* Method area is created on VM startup
+* Method is logically part of the heap but implementations may choose to GC or not.
+* JVM implementation may let the programmer choose a fixed vs variable size for the method area
+* If memory can not be made in the method area, JVM will throw an OutOfMemoryError
 
+**2.5.5 Run-time Constant pool**
+
+* A run-time constant pool is a per class or per interface representation of the `constant_pool` table in a `class` file.
+* It contains several constants, from numeric literal known at compile time to method & field references that must be resolved at run time.
+* It serves a similar purpose than a symbol table for a conventional programming language although it has a wider variety than a typical symbol table.
+* Run-time constant pool is allocated from the method area
+* It's constructed when the class or interface is created by the JVM
+* If it can't be created, the JVM will throw a OutOfMemoryError exception
+
+**2.5.6 Native Method stacks**
+
+* JVM implementation may use conventional stacks to support `native` methods, a.k.a "C stacks"
+* If supplied, native method stacks are typically allocated per thread when each thread is created.
+* Possible exceptions: StackOverflowError, OutOfMemoryError
+
+**2.6 Frames**
+
+* A frame is used to store data & partial results | perform dynamic linking | return values for methods | dispatch exceptions.
+* A frame is created every time a method is invoked.
+* A frame is destroyed when its method invocation completes, whether that completion is abrupt or normal.
+* Frames are allocated from the stack of the JVM thread creating it.
+* Each frame has its own variables, its own operand stack, a reference to the run-time constant pool of the class of the current method.
+* Size of the local variable array & operand stack are determined at compile time & are supplied along with the code for the method associated with the frame.
+* Size of the frame depends only on the data implementation of the JVM & the memory for these data structures can be allocated simultaneously on method invocation.
+* Only one frame is active at any time in a given thread.
+* This frame is called current frame & associated method is current method. Class of the associated method is called current class.
+* Operations on local variables & the operand stack are typically with reference to the current frame.
+* A frame ceases to be current if its method invokes another method or if its current method completes.
+* When a method is invoked, a new frame is created & becomes current when control transfers to the new method.
+* On method return, the current frame passes back the result of its method invocation, if any, to the previous frame. Current frame is then discarded.
+* Note: A frame created by a thread is local to that thread & can't be referenced in another thread.
