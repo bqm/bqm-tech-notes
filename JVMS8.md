@@ -76,14 +76,14 @@ things like memory layout of run-time data areas, garbage collector algorithm (G
 * Numeric types, boolean type, returnAddress type.
 * Numeric types are integral types, floating point types.
 * Integral types
-** byte (8 bit signed two's complement integers) & whose default value is 0 (from -128 to 127)
-** short (16 bit signed two's complement integers) & whose default value is 0 (from -32768 to 32767)
-** int (32 bit signed two"s complement integers) & whose default value is 0 (from -2147483648 to 2147483647)
-** long (64 bit signed two's complement integers)  & whose default value is 0 (from -9223372036854775808 to 9223372036854775807)
-** char (16 bit unsigned integers) representing Unicode code points in the Basic Multilingual Plane, encoded with UTF-16 & whose default value is the null code point (from 0 to 65535)
+  * byte (8 bit signed two's complement integers) & whose default value is 0 (from -128 to 127)
+  * short (16 bit signed two's complement integers) & whose default value is 0 (from -32768 to 32767)
+  * int (32 bit signed two"s complement integers) & whose default value is 0 (from -2147483648 to 2147483647)
+  * long (64 bit signed two's complement integers)  & whose default value is 0 (from -9223372036854775808 to 9223372036854775807)
+  * char (16 bit unsigned integers) representing Unicode code points in the Basic Multilingual Plane, encoded with UTF-16 & whose default value is the null code point (from 0 to 65535)
 * Floating point types
-** float
-** double
+  * float
+  * double
 
 **returnAddress**
 
@@ -98,11 +98,11 @@ things like memory layout of run-time data areas, garbage collector algorithm (G
 * coefficient is encoded using m bits, exponent is encoded on e bits & delta is equal to 2^(e-1) - 1
 * coefficient = (1 + 2^(-23) * number_encoded)
 * Special cases:
-** -0
-** +0
-** - infinity
-** + infinity
-** NaN (not a number)
+  * -0
+  * +0
+  * \- infinity
+  * \+ infinity
+  * NaN (not a number)
 * float is 32 bits & e = 8 bits & m = 23 bits. delta = 2 ^ 7 -1 = 127
 
 (more to be added here)
@@ -159,7 +159,7 @@ things like memory layout of run-time data areas, garbage collector algorithm (G
 **2.5.4 Method area**
 
 * JVM has a method area that is common across all threads
-* It stores per class structures such as the run time constant pool, field & method data, code for methods & constructors, including the special methods ($2.9)
+* It stores per class structures such as the run time constant pool, field & method data, code for methods & constructors, including the special methods (\$2.9)
 * Method area is created on VM startup
 * Method is logically part of the heap but implementations may choose to GC or not.
 * JVM implementation may let the programmer choose a fixed vs variable size for the method area
@@ -197,3 +197,86 @@ things like memory layout of run-time data areas, garbage collector algorithm (G
 * When a method is invoked, a new frame is created & becomes current when control transfers to the new method.
 * On method return, the current frame passes back the result of its method invocation, if any, to the previous frame. Current frame is then discarded.
 * Note: A frame created by a thread is local to that thread & can't be referenced in another thread.
+
+**2.6.1 Local variables**
+
+* Each frame contains an array of variables called local variables.
+* Length of a local variable is determined at compile time & supplied in the binary representation of a class or interface along with the code of the method associated with the frame.
+* A local variable can either be `boolean`, `byte`, `char`, `short`, `int`, `float`, `reference`, `returnAddress`.
+* A pair of local variables can either be a `long` or `double`
+* Local variables are addressed by indexing. Index of first local variable is 0. 
+* A `long` or `double` are using two consecutive local variables.
+* JVM uses local variables to pass parameters on method invocation.
+* On class method invocation, any parameters are passed in consecutive local variables starting from local variable 0.
+* On instance method invocation, local variable 0 is always used to pass a reference to the object on which instance method is being invoked (`this` in Java).
+
+**2.6.2 Operand stacks**
+
+* Each frame contains a LIFO stack known as operand stack.
+* Maximum depth is determined at compile time & is supplied along with the code in the frame.
+* Operand stack is empty when frame is created.
+* JVM supplies instructions to load constants or values from local variables or fields onto the operand stack.
+* Other JVM instructions take operands from the operand stack, operate on them & push back the result.
+* Example: `iadd` adds 2 integers. It requires that the 2 integers should be on top of the stack, pushed by previous instructions. They are added & then result is pushed on the top.
+
+**2.6.3 Dynamic linking**
+
+* Each frame contains a reference to the run-time constant pool (\$2.5.5) to support dynamic linking.
+* `class` file code refers to method to be invoked & variables to be accessed via symbolic references.
+* Dynamic linking translate these symbolic method references into concrete method references.
+
+**2.6.4 Normal method invocation completion**
+
+* A method invocation completes normally if that invocation does not cause an exception to be thrown.
+
+**2.6.5 Abrupt method invocation completion**
+
+* Method invocation completes abruptly if JVM instruction throws an exception & method is not handling it.
+* For instance, `athrow` causes an exception to be explicitly thrown.
+
+2.7 Representation of Objects
+-----------------------------
+
+* JVM does not mandate any particular internal structure.
+* In some Oracle's implementation, a reference to a class instance is a pointer to a handle that is itself a pair of pointers.
+* One to a table containing the methods of the object, one to the `Class` object that represents the type & other to the memory allocated from the heap for the obj data.
+
+2.8 Floating-Point Arithmetic
+-----------------------------
+
+* JVM implements a subset of the floating-point arithmetic specific in IEEE 754.
+
+**2.8.1 Differences**
+
+* JVM do not throw exceptions when dividing by 0, overflow, underflow or inexact.
+* No NaN, no signaling floating-point comparisons.
+* JVM doesn't allow a way to choose the rounding mode.
+
+**2.8.2 Floating-point modes**
+
+* Every method can be either floating point strict or not (set via `ACC_STRICT` flag of the `access_flags` item of the `method_info`).
+* If a float-extended-exponent value set is supported (\$2.3.2), values of type `float` on an operand stack that is not FP-strict may range over that value set except where prohibited by value set conversion (\$2.8.3). Same for `double`.
+* In all other contexts & regardless of the floating point mode, `float` & `double` may range over the float value set & double value set respectively.
+
+**2.8.3 Value set conversion**
+
+* Won't be detailed here: some rules around when to use a conversion between the extended & standard value sets.
+
+2.9 Special methods
+-------------------
+
+* Every constructor written in Java appears as an instance initialization method that has a special name `<init>`.
+* `<init>` is not a valid identifier & can't be used directly in Java (same for `clinit`).
+* Instance initialization may be invoked only within the JVM by `invokespecial` instruction & may be invoked on uninstantiated class instances.
+* An instance initialization takes on the access permissions of the constructor from which it was derived.
+* A class or interface has at most one class or interface initialization method & is initialized (\$5.5) by invoking that method.
+* The static initializer of a class is called `<clinit>`, takes not argument and is void (\$4.3.3).
+* Other methods called `<clinit>` are of no consequence.
+* For version number > 51.0, method must have its `ACC_STATIC` flag set in order to be considered the init method.
+* A method is signature polymorphic if all the following are true:
+  * Declared in `java.lang.invoke.MethodHandle` class.
+  * Single formal parameter of type Object[]
+  * Returns an Object
+  * It has the `ACC_VARARGS` and `ACC_NATIVE` flags set
+* JVM gives special treatement to signature polymorphic methods in the `invokevirtual` instruction.
+* See `java.lang.invoke` for more info
